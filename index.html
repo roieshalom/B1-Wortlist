@@ -8,23 +8,55 @@
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
         h1 {
             text-align: center;
-            margin: 24px 0 12px 0;
+            margin: 24px 0 32px 0;
+            color: #143b6e;
         }
-        #game-container {
+        .navigation {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 18px;
-            padding: 24px;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            background: #143b6e;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #1950a0;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #counter {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #143b6e;
+            min-width: 80px;
+            text-align: center;
+        }
+        #card-container {
+            perspective: 1000px;
+            margin: 20px 0;
         }
         .flip-card {
             background-color: transparent;
-            width: 220px;
-            height: 120px;
+            width: 400px;
+            height: 200px;
             perspective: 800px;
         }
         .flip-card-inner {
@@ -32,7 +64,7 @@
             width: 100%;
             height: 100%;
             text-align: center;
-            transition: transform 0.5s;
+            transition: transform 0.6s;
             transform-style: preserve-3d;
             cursor: pointer;
         }
@@ -45,13 +77,14 @@
             height: 100%;
             backface-visibility: hidden;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2em;
-            padding: 10px;
+            font-size: 1.3em;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .flip-card-front {
             color: #143b6e;
@@ -61,89 +94,172 @@
             background: #143b6e;
             color: #fff;
             transform: rotateY(180deg);
+            font-size: 1.1em;
+            line-height: 1.4;
         }
-        #shuffle-btn {
-            display: block;
-            margin: 0 auto 20px auto;
-            padding: 10px 24px;
-            font-size: 1em;
-            border-radius: 8px;
-            border: none;
-            background: #143b6e;
-            color: #fff;
-            cursor: pointer;
-        }
-        #shuffle-btn:hover {
-            background: #1950a0;
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
     <h1>Goethe Zertifikat B1 Wortliste – Flip Card Game</h1>
-    <button id="shuffle-btn">Karten mischen</button>
-    <div id="game-container"></div>
+    
+    <div class="navigation">
+        <button id="prev-btn">← Previous</button>
+        <div id="counter">1 / 0</div>
+        <button id="next-btn">Next →</button>
+        <button id="shuffle-btn">Shuffle</button>
+    </div>
+    
+    <div id="card-container"></div>
     <script>
-        // Adjust the keys below if your json file has different keys for word/meaning
+        // Configuration
         const WORD_KEY = "Goethe Zertifikat B1 Wortliste";
-        // The meaning is assumed to be at the second property in the object
-        // (like in your original code), but you can change this if your file changes.
+        
+        // Global variables
+        let vocabData = [];
+        let currentIndex = 0;
+        let currentCard = null;
+
+        // Get meaning from vocabulary item
         function getMeaning(item) {
-            let values = Object.values(item);
-            // If the first value is the word, the second is the meaning
+            const values = Object.values(item);
             return values[1] || "";
         }
 
+        // Shuffle array using Fisher-Yates algorithm
         function shuffleArray(array) {
-            // Fisher-Yates shuffle
-            for (let i = array.length - 1; i > 0; i--) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Update counter display
+        function updateCounter() {
+            const counter = document.getElementById('counter');
+            counter.textContent = `${currentIndex + 1} / ${vocabData.length}`;
+        }
+
+        // Update navigation buttons state
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === vocabData.length - 1;
+        }
+
+        // Create and display a single card
+        function renderCard() {
+            if (!vocabData.length) return;
+
+            const container = document.getElementById('card-container');
+            const item = vocabData[currentIndex];
+            const word = item[WORD_KEY] || Object.values(item)[0];
+            const meaning = getMeaning(item);
+
+            // Clear container completely
+            container.innerHTML = '';
+
+            // Create new card
+            const card = document.createElement('div');
+            card.className = 'flip-card';
+            card.innerHTML = `
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">${word}</div>
+                    <div class="flip-card-back">${meaning}</div>
+                </div>
+            `;
+
+            // Add flip functionality
+            card.addEventListener('click', function() {
+                card.classList.toggle('flipped');
+            });
+
+            container.appendChild(card);
+            currentCard = card;
+
+            updateCounter();
+            updateNavigationButtons();
+        }
+
+        // Navigate to previous card
+        function goToPrevious() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCard();
             }
         }
 
-        function renderCards(data) {
-            const container = document.getElementById('game-container');
-            container.innerHTML = ""; // Clear previous cards
-            data.forEach(item => {
-                const word = item[WORD_KEY] || Object.values(item)[0];
-                const meaning = getMeaning(item);
-
-                // Create card elements
-                const card = document.createElement('div');
-                card.className = 'flip-card';
-                card.innerHTML = `
-                    <div class="flip-card-inner">
-                        <div class="flip-card-front">${word}</div>
-                        <div class="flip-card-back">${meaning}</div>
-                    </div>
-                `;
-                // Flip on click
-                card.addEventListener('click', function() {
-                    card.classList.toggle('flipped');
-                });
-                container.appendChild(card);
-            });
+        // Navigate to next card
+        function goToNext() {
+            if (currentIndex < vocabData.length - 1) {
+                currentIndex++;
+                renderCard();
+            }
         }
 
-        let vocabData = [];
-
-        fetch('csvjson.json')
-            .then(response => response.json())
-            .then(data => {
-                vocabData = data;
-                shuffleArray(vocabData);
-                renderCards(vocabData.slice(0, 12)); // Show 12 random cards at a time
-            })
-            .catch(error => {
-                document.getElementById('game-container').innerText =
-                  'Fehler beim Laden der Wortliste: ' + error;
-            });
-
-        document.getElementById('shuffle-btn').addEventListener('click', function() {
+        // Shuffle cards and start from beginning
+        function shuffleCards() {
             if (vocabData.length > 0) {
-                shuffleArray(vocabData);
-                renderCards(vocabData.slice(0, 12));
+                vocabData = shuffleArray(vocabData);
+                currentIndex = 0;
+                renderCard();
             }
+        }
+
+        // Initialize the application
+        function init() {
+            const container = document.getElementById('card-container');
+            container.innerHTML = '<div class="loading">Loading vocabulary...</div>';
+
+            fetch('csvjson.json')
+                .then(response => response.json())
+                .then(data => {
+                    vocabData = shuffleArray(data);
+                    currentIndex = 0;
+                    renderCard();
+                })
+                .catch(error => {
+                    container.innerHTML = `<div class="loading">Error loading vocabulary: ${error.message}</div>`;
+                });
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+
+            // Navigation buttons
+            document.getElementById('prev-btn').addEventListener('click', goToPrevious);
+            document.getElementById('next-btn').addEventListener('click', goToNext);
+            document.getElementById('shuffle-btn').addEventListener('click', shuffleCards);
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                switch(event.key) {
+                    case 'ArrowLeft':
+                        event.preventDefault();
+                        goToPrevious();
+                        break;
+                    case 'ArrowRight':
+                        event.preventDefault();
+                        goToNext();
+                        break;
+                    case ' ':
+                        event.preventDefault();
+                        if (currentCard) {
+                            currentCard.click();
+                        }
+                        break;
+                }
+            });
         });
     </script>
 </body>
