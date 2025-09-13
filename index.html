@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Goethe Wortliste Flip Card Game</title>
+    <title>B1 Vocabulary practice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,21 +12,30 @@
         }
         h1 {
             text-align: center;
-            margin: 24px 0 12px 0;
+            margin: 32px 0 20px 0;
+        }
+        #main-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
         }
         #game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
         }
         .flip-card {
             background-color: transparent;
-            width: 280px;
-            height: 160px;
+            width: 300px;
+            height: 180px;
             perspective: 800px;
-            margin-bottom: 16px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .flip-card-inner {
             position: relative;
@@ -36,6 +45,9 @@
             transition: transform 0.5s;
             transform-style: preserve-3d;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .flip-card.flipped .flip-card-inner {
             transform: rotateY(180deg);
@@ -46,12 +58,12 @@
             height: 100%;
             backface-visibility: hidden;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4em;
+            font-size: 1.5em;
             padding: 24px;
         }
         .flip-card-front {
@@ -63,36 +75,29 @@
             color: #fff;
             transform: rotateY(180deg);
         }
-        #controls {
-            display: flex;
-            justify-content: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-        #controls button {
-            padding: 10px 24px;
-            font-size: 1em;
-            border-radius: 8px;
+        #next-btn {
+            padding: 12px 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
             border: none;
             background: #143b6e;
             color: #fff;
             cursor: pointer;
+            margin-top: 10px;
         }
-        #controls button:hover {
+        #next-btn:hover {
             background: #1950a0;
         }
     </style>
 </head>
 <body>
-    <h1>Goethe Zertifikat B1 Wortliste – Flip Card Game</h1>
-    <div id="controls">
-        <button id="prev-btn">Zurück</button>
-        <button id="shuffle-btn">Mischen</button>
-        <button id="next-btn">Weiter</button>
+    <h1>B1 Vocabulary practice</h1>
+    <div id="main-wrapper">
+        <div id="game-container"></div>
+        <button id="next-btn">Next</button>
     </div>
-    <div id="game-container"></div>
     <script>
-        // Adjust the keys below if your json file has different keys for word/meaning
+        // Adjust the key if your json file uses a different key for the word
         const WORD_KEY = "Goethe Zertifikat B1 Wortliste";
         function getMeaning(item) {
             let values = Object.values(item);
@@ -114,7 +119,7 @@
             container.innerHTML = ""; // Clear previous card
             const item = vocabData[idx];
             if (!item) {
-                container.innerHTML = "<p>Keine Karte gefunden.</p>";
+                container.innerHTML = "<p>No card found.</p>";
                 return;
             }
             const word = item[WORD_KEY] || Object.values(item)[0];
@@ -127,6 +132,9 @@
                     <div class="flip-card-back">${meaning}</div>
                 </div>
             `;
+            // Always remove 'flipped' so the card starts showing the word
+            card.classList.remove('flipped');
+            // Flip on click
             card.addEventListener('click', function() {
                 card.classList.toggle('flipped');
             });
@@ -136,7 +144,7 @@
         function showCard(idx) {
             if (vocabData.length === 0) return;
             if (idx < 0) idx = 0;
-            if (idx >= vocabData.length) idx = vocabData.length - 1;
+            if (idx >= vocabData.length) idx = 0;
             currentIdx = idx;
             renderCard(currentIdx);
         }
@@ -156,22 +164,7 @@
         document.getElementById('next-btn').addEventListener('click', function() {
             if (vocabData.length > 0) {
                 currentIdx = (currentIdx + 1) % vocabData.length;
-                renderCard(currentIdx);
-            }
-        });
-
-        document.getElementById('prev-btn').addEventListener('click', function() {
-            if (vocabData.length > 0) {
-                currentIdx = (currentIdx - 1 + vocabData.length) % vocabData.length;
-                renderCard(currentIdx);
-            }
-        });
-
-        document.getElementById('shuffle-btn').addEventListener('click', function() {
-            if (vocabData.length > 0) {
-                shuffleArray(vocabData);
-                currentIdx = 0;
-                renderCard(currentIdx);
+                showCard(currentIdx);
             }
         });
     </script>
