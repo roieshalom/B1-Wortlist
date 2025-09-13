@@ -1,74 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Goethe B1 Vocab Card Game</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Goethe Wortliste</title>
 </head>
 <body>
-  <h1>Goethe B1 Vocabulary Trainer</h1>
-  <div class="navigation">
-    <button id="prevBtn">&lt; Previous</button>
-    <span id="counter"></span>
-    <button id="nextBtn">Next &gt;</button>
-  </div>
-
-  <div class="card single-card" id="card">
-    <div class="card-inner">
-      <div class="card-front" id="cardFront">Loading...</div>
-      <div class="card-back" id="cardBack"></div>
-    </div>
-  </div>
-  <div class="loading" id="loadingMsg">Loading card data...</div>
-
-  <script>
-    let words = [];
-    let current = 0;
-
-    function renderCard() {
-      if (!words.length) return;
-      document.getElementById('cardFront').textContent = words[current][0];
-      document.getElementById('cardBack').textContent = words[current][1];
-      document.getElementById('counter').textContent = (current+1) + " / " + words.length;
-    }
-
-    async function loadWords() {
-      try {
-        const resp = await fetch("https://wejn.org/assets/2023-goethe-b1/goethe-zertifikat-b1-wortliste.html");
-        const text = await resp.text();
-        // Extract table lines: they all match |Word|Example|
-        const lines = text.matchAll(/\|([^\|]+)\|([^\|]+)\|/g);
-        words = Array.from(lines, m => [
-          m[1].trim(),   // German word with forms
-          m[2].trim()    // Example(s)
-        ]);
-        document.getElementById('loadingMsg').style.display = "none";
-        renderCard();
-      } catch (e) {
-        document.getElementById('loadingMsg').textContent = "Failed to load vocab list.";
-      }
-    }
-
-    document.getElementById('nextBtn').onclick = function() {
-      if (!words.length) return;
-      current = (current+1) % words.length;
-      document.getElementById('card').classList.remove("flipped");
-      renderCard();
-    }
-
-    document.getElementById('prevBtn').onclick = function() {
-      if (!words.length) return;
-      current = (current-1+words.length) % words.length;
-      document.getElementById('card').classList.remove("flipped");
-      renderCard();
-    }
-
-    // Flip on click
-    document.getElementById('card').onclick = function() {
-      this.classList.toggle('flipped');
-    }
-
-    loadWords();
-  </script>
+    <h1>Goethe Zertifikat B1 Wortliste</h1>
+    <div id="wortliste"></div>
+    <script>
+        fetch('csvjson.json')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('wortliste');
+                data.forEach(item => {
+                    for (let wort in item) {
+                        // Get the second property as value if the structure matches your file
+                        let werte = Object.values(item);
+                        container.innerHTML += `<h3>${item['Goethe Zertifikat B1 Wortliste']}</h3>`;
+                        container.innerHTML += `<p>${werte[1]}</p>`;
+                    }
+                });
+            })
+            .catch(error => {
+                document.getElementById('wortliste').innerText =
+                  'Fehler beim Laden der Wortliste: ' + error;
+            });
+    </script>
 </body>
 </html>
