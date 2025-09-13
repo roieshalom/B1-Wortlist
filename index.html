@@ -14,13 +14,6 @@
             text-align: center;
             margin: 32px 0 20px 0;
         }
-        #main-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-        }
         #game-container {
             display: flex;
             flex-direction: column;
@@ -84,6 +77,9 @@
             color: #fff;
             cursor: pointer;
             margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         #next-btn:hover {
             background: #1950a0;
@@ -92,10 +88,8 @@
 </head>
 <body>
     <h1>B1 Vocabulary practice</h1>
-    <div id="main-wrapper">
-        <div id="game-container"></div>
-        <button id="next-btn">Next</button>
-    </div>
+    <div id="game-container"></div>
+    <button id="next-btn">Next</button>
     <script>
         // Adjust the key if your json file uses a different key for the word
         const WORD_KEY = "Goethe Zertifikat B1 Wortliste";
