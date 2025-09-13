@@ -2,29 +2,149 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Goethe Wortliste</title>
+    <title>Goethe Wortliste Flip Card Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin: 24px 0 12px 0;
+        }
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            padding: 24px;
+        }
+        .flip-card {
+            background-color: transparent;
+            width: 220px;
+            height: 120px;
+            perspective: 800px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            padding: 10px;
+        }
+        .flip-card-front {
+            color: #143b6e;
+            font-weight: bold;
+        }
+        .flip-card-back {
+            background: #143b6e;
+            color: #fff;
+            transform: rotateY(180deg);
+        }
+        #shuffle-btn {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px 24px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            background: #143b6e;
+            color: #fff;
+            cursor: pointer;
+        }
+        #shuffle-btn:hover {
+            background: #1950a0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Goethe Zertifikat B1 Wortliste</h1>
-    <div id="wortliste"></div>
+    <h1>Goethe Zertifikat B1 Wortliste – Flip Card Game</h1>
+    <button id="shuffle-btn">Karten mischen</button>
+    <div id="game-container"></div>
     <script>
+        // Adjust the keys below if your json file has different keys for word/meaning
+        const WORD_KEY = "Goethe Zertifikat B1 Wortliste";
+        // The meaning is assumed to be at the second property in the object
+        // (like in your original code), but you can change this if your file changes.
+        function getMeaning(item) {
+            let values = Object.values(item);
+            // If the first value is the word, the second is the meaning
+            return values[1] || "";
+        }
+
+        function shuffleArray(array) {
+            // Fisher-Yates shuffle
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById('game-container');
+            container.innerHTML = ""; // Clear previous cards
+            data.forEach(item => {
+                const word = item[WORD_KEY] || Object.values(item)[0];
+                const meaning = getMeaning(item);
+
+                // Create card elements
+                const card = document.createElement('div');
+                card.className = 'flip-card';
+                card.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">${word}</div>
+                        <div class="flip-card-back">${meaning}</div>
+                    </div>
+                `;
+                // Flip on click
+                card.addEventListener('click', function() {
+                    card.classList.toggle('flipped');
+                });
+                container.appendChild(card);
+            });
+        }
+
+        let vocabData = [];
+
         fetch('csvjson.json')
             .then(response => response.json())
             .then(data => {
-                const container = document.getElementById('wortliste');
-                data.forEach(item => {
-                    for (let wort in item) {
-                        // Get the second property as value if the structure matches your file
-                        let werte = Object.values(item);
-                        container.innerHTML += `<h3>${item['Goethe Zertifikat B1 Wortliste']}</h3>`;
-                        container.innerHTML += `<p>${werte[1]}</p>`;
-                    }
-                });
+                vocabData = data;
+                shuffleArray(vocabData);
+                renderCards(vocabData.slice(0, 12)); // Show 12 random cards at a time
             })
             .catch(error => {
-                document.getElementById('wortliste').innerText =
+                document.getElementById('game-container').innerText =
                   'Fehler beim Laden der Wortliste: ' + error;
             });
+
+        document.getElementById('shuffle-btn').addEventListener('click', function() {
+            if (vocabData.length > 0) {
+                shuffleArray(vocabData);
+                renderCards(vocabData.slice(0, 12));
+            }
+        });
     </script>
 </body>
 </html>
