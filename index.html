@@ -19,13 +19,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: calc(100vh - 52px); /* fills the screen, 52px is title+gap */
         }
         .flip-card {
             background-color: transparent;
             width: 300px;
             height: 180px;
             perspective: 800px;
-            margin-bottom: 28px;
+            /* The margin auto centers vertically if possible, plus top/bottom gap */
+            margin-top: auto;
+            margin-bottom: auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -58,10 +61,10 @@
             justify-content: center;
             font-size: 1.5em;
             padding: 24px;
+            font-weight: normal; /* Make text non-bold */
         }
         .flip-card-front {
             color: #143b6e;
-            font-weight: bold;
         }
         .flip-card-back {
             background: #143b6e;
@@ -76,7 +79,8 @@
             background: #143b6e;
             color: #fff;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 28px;
+            margin-bottom: 28px;
             display: block;
             margin-left: auto;
             margin-right: auto;
