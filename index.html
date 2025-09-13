@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Goethe B1 Vocabulary Cards</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Goethe B1 Vocabulary Game</h1>
+  <button id="shuffleBtn">Shuffle Cards</button>
+  <div class="card-container" id="cardContainer">
+    <!-- Cards will be injected here by JS -->
+  </div>
+
+  <script>
+    // Sample word list (add more as needed). Each entry: [German word, Example or Translation]
+    const words = [
+      ["ab", "Die Fahrt kostet ab Hamburg 200 Euro."],
+      ["abbiegen", "An der nächsten Kreuzung müssen Sie links abbiegen."],
+      ["die Abbildung", "Auf der Abbildung sehen Sie, wie man das Gerät einschaltet."],
+      ["das Abenteuer", "Unser Urlaub war ein tolles Abenteuer."],
+      ["aber", "Heute kann ich nicht, aber morgen ganz bestimmt."],
+      ["abfahren", "Unser Zug ist pünktlich abgefahren."],
+      // ... add more here
+    ];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createCards() {
+      const container = document.getElementById('cardContainer');
+      container.innerHTML = '';
+      words.forEach(([german, translation], idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">${german}</div>
+            <div class="card-back">${translation}</div>
+          </div>
+        `;
+        card.addEventListener('click', () => card.classList.toggle('flipped'));
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('shuffleBtn').onclick = () => {
+      shuffle(words);
+      createCards();
+    };
+
+    // Initial render
+    createCards();
+  </script>
+</body>
+</html>
