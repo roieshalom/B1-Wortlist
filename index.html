@@ -24,10 +24,12 @@
         }
         h1 {
             text-align: center;
-            margin-top: 32px;
-            margin-bottom: 24px;
+            margin-top: 36px;
+            margin-bottom: 0;
         }
         #game-container {
+            margin-top: 36px; /* gap from title */
+            margin-bottom: 0;
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -37,10 +39,10 @@
             width: 320px;
             max-width: 95vw;
             min-height: 180px;
-            margin-bottom: 32px; /* This controls the gap to the button */
+            height: auto;
+            margin: 0;
             background: transparent;
             perspective: 800px;
-            /* Remove align-items, justify-content to allow card to grow naturally */
         }
         .flip-card-inner {
             width: 100%;
@@ -51,12 +53,15 @@
             transform-style: preserve-3d;
             cursor: pointer;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
         }
         .flip-card.flipped .flip-card-inner {
             transform: rotateY(180deg);
         }
         .flip-card-front, .flip-card-back {
-            /* Remove position: absolute! */
+            /* No absolute! */
             width: 100%;
             min-height: 180px;
             height: auto;
@@ -74,15 +79,20 @@
             word-break: break-word;
             backface-visibility: hidden;
             transition: background 0.3s;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         .flip-card-front {
             color: #143b6e;
             background: #fff;
+            z-index: 2;
         }
         .flip-card-back {
             background: #143b6e;
             color: #fff;
             transform: rotateY(180deg);
+            z-index: 1;
         }
         .google-translate-link {
             margin-top: 18px;
@@ -108,8 +118,8 @@
             background: #143b6e;
             color: #fff;
             cursor: pointer;
+            margin-top: 36px; /* gap from card */
             margin-bottom: 36px;
-            margin-top: 0;
             display: block;
         }
         #next-btn:hover {
