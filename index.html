@@ -73,7 +73,7 @@
             color: #fff;
             transform: rotateY(180deg);
         }
-        .translate-btn {
+        .google-translate-link {
             margin-top: 18px;
             background: #fff;
             color: #143b6e;
@@ -82,21 +82,12 @@
             cursor: pointer;
             padding: 8px 18px;
             font-size: 0.9em;
+            text-decoration: none;
             transition: background 0.17s;
+            display: inline-block;
         }
-        .translate-btn:hover {
+        .google-translate-link:hover {
             background: #dde7fa;
-        }
-        .translation-result {
-            margin-top: 15px;
-            color: #ffeb3b;
-            font-size: 1em;
-            font-style: italic;
-            background: rgba(0,0,0,0.1);
-            padding: 6px 8px;
-            border-radius: 6px;
-            max-width: 100%;
-            word-break: break-word;
         }
         #next-btn {
             padding: 12px 40px;
@@ -115,7 +106,6 @@
         #next-btn:hover {
             background: #1950a0;
         }
-        /* Responsive styles for tablets and phones */
         @media (max-width: 700px) {
             .flip-card {
                 width: 94vw;
@@ -187,6 +177,9 @@
             const word = item[WORD_KEY] || Object.values(item)[0];
             const meaning = getMeaning(item);
 
+            // URL encode the word for Google Translate
+            const encodedWord = encodeURIComponent(word);
+
             const card = document.createElement('div');
             card.className = 'flip-card';
             card.innerHTML = `
@@ -194,52 +187,20 @@
                     <div class="flip-card-front">${word}</div>
                     <div class="flip-card-back">
                         <div>${meaning}</div>
-                        <button class="translate-btn" type="button">Translate</button>
-                        <div class="translation-result" style="display:none;"></div>
+                        <a 
+                          class="google-translate-link" 
+                          href="https://translate.google.com/?sl=de&tl=en&text=${encodedWord}&op=translate" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >Show English translation</a>
                     </div>
                 </div>
             `;
             card.classList.remove('flipped');
-            // Flip on click (only if not clicking on Translate button)
+            // Flip on click (only if not clicking the link)
             card.addEventListener('click', function(e) {
-                // Prevent flipping if translate button is clicked
-                if (e.target && e.target.classList.contains('translate-btn')) return;
+                if (e.target && e.target.classList.contains('google-translate-link')) return;
                 card.classList.toggle('flipped');
-            });
-
-            // Translate button logic
-            const btn = card.querySelector('.translate-btn');
-            const resultDiv = card.querySelector('.translation-result');
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                // Disable button to prevent double click
-                btn.disabled = true;
-                btn.textContent = "Translating...";
-                // Use the word itself for translation (German to English)
-                fetch('https://translate.argosopentech.com/translate', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        q: word,
-                        source: "de",
-                        target: "en",
-                        format: "text"
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    resultDiv.textContent = data.translatedText || "No translation found.";
-                    resultDiv.style.display = "block";
-                    btn.style.display = "none";
-                })
-                .catch(err => {
-                    resultDiv.textContent = "Translation failed.";
-                    resultDiv.style.display = "block";
-                    btn.disabled = false;
-                    btn.textContent = "Translate";
-                });
             });
 
             container.appendChild(card);
