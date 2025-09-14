@@ -5,12 +5,15 @@
     <title>B1 Vocabulary practice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
             min-height: 100vh;
             font-family: Arial, sans-serif;
             background: #f5f5f5;
-            margin: 0;
-            padding: 0;
         }
         .main-layout {
             min-height: 100vh;
@@ -31,27 +34,43 @@
             flex-direction: column;
             align-items: center;
         }
-        .flip-card {
+
+        /* Flip card wrapper ensures button pushed down */
+        .flip-card-outer {
             width: 340px;
             max-width: 95vw;
-            background: transparent;
             margin: 0;
-            perspective: none; /* No 3D needed for this technique */
-            /* Remove min-height (let card grow), let content decide height */
-            /* Remove fixed height! */
+            position: relative;
+            /* Allow card to grow to fit tallest side */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 180px;
+            transition: min-height 0.3s;
+        }
+        .flip-card {
+            width: 100%;
+            perspective: 1200px;
+            position: relative;
         }
         .flip-card-inner {
             width: 100%;
+            transition: transform 0.6s cubic-bezier(.4,2.08,.55,.44);
+            transform-style: preserve-3d;
             position: relative;
-            transition: none;
+            min-height: 180px;
         }
-        .flip-card-front,
-        .flip-card-back {
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
             width: 100%;
-            /* No absolute, no position! */
+            left: 0;
+            top: 0;
             border-radius: 24px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -60,22 +79,20 @@
             font-weight: normal;
             box-sizing: border-box;
             word-break: break-word;
-            margin: 0;
+            min-height: 180px;
+            backface-visibility: hidden;
             transition: background 0.3s;
         }
         .flip-card-front {
             color: #143b6e;
             background: #fff;
+            z-index: 2;
         }
         .flip-card-back {
             background: #143b6e;
             color: #fff;
-        }
-        .flip-card.show-front .flip-card-front {
-            display: flex;
-        }
-        .flip-card.show-back .flip-card-back {
-            display: flex;
+            transform: rotateY(180deg);
+            z-index: 1;
         }
         .google-translate-link {
             margin-top: 18px;
@@ -108,8 +125,9 @@
         #next-btn:hover {
             background: #1950a0;
         }
+
         @media (max-width: 700px) {
-            .flip-card {
+            .flip-card-outer {
                 width: 94vw;
             }
             .flip-card-front, .flip-card-back {
@@ -126,7 +144,7 @@
             h1 {
                 font-size: 1em;
             }
-            .flip-card {
+            .flip-card-outer {
                 width: 98vw;
             }
             .flip-card-front, .flip-card-back {
@@ -163,6 +181,16 @@
             }
         }
 
+        function adjustOuterHeight(outer, front, back) {
+            // Wait for render, then measure
+            setTimeout(() => {
+                const frontHeight = front.scrollHeight;
+                const backHeight = back.scrollHeight;
+                const maxHeight = Math.max(frontHeight, backHeight, 180);
+                outer.style.minHeight = maxHeight + "px";
+            }, 0);
+        }
+
         function renderCard(idx) {
             const container = document.getElementById('game-container');
             container.innerHTML = ""; // Clear previous card
@@ -175,8 +203,11 @@
             const meaning = getMeaning(item);
             const encodedWord = encodeURIComponent(word);
 
+            const outer = document.createElement('div');
+            outer.className = 'flip-card-outer';
+
             const card = document.createElement('div');
-            card.className = 'flip-card show-front';
+            card.className = 'flip-card';
             card.innerHTML = `
                 <div class="flip-card-inner">
                     <div class="flip-card-front">${word}</div>
@@ -192,19 +223,23 @@
                 </div>
             `;
 
-            // Toggle card side on card click (but not if Translate is clicked)
+            // Flip on click (but not if clicking Translate link)
             card.addEventListener('click', function(e) {
                 if (e.target && e.target.classList.contains('google-translate-link')) return;
-                if (card.classList.contains('show-front')) {
-                    card.classList.remove('show-front');
-                    card.classList.add('show-back');
-                } else {
-                    card.classList.remove('show-back');
-                    card.classList.add('show-front');
-                }
+                card.classList.toggle('flipped');
+                // Adjust height after flip
+                const front = card.querySelector('.flip-card-front');
+                const back = card.querySelector('.flip-card-back');
+                adjustOuterHeight(outer, front, back);
             });
 
-            container.appendChild(card);
+            outer.appendChild(card);
+            container.appendChild(outer);
+
+            // Adjust height after render
+            const front = card.querySelector('.flip-card-front');
+            const back = card.querySelector('.flip-card-back');
+            adjustOuterHeight(outer, front, back);
         }
 
         function showCard(idx) {
