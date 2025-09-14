@@ -5,22 +5,18 @@
     <title>B1 Vocabulary practice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
         body {
             min-height: 100vh;
             font-family: Arial, sans-serif;
             background: #f5f5f5;
+            margin: 0;
+            padding: 0;
         }
         .main-layout {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
         }
         h1 {
             text-align: center;
@@ -28,7 +24,7 @@
             margin-bottom: 0;
         }
         #game-container {
-            margin-top: 36px; /* gap from title */
+            margin-top: 36px;
             margin-bottom: 0;
             width: 100%;
             display: flex;
@@ -36,63 +32,50 @@
             align-items: center;
         }
         .flip-card {
-            width: 320px;
+            width: 340px;
             max-width: 95vw;
-            min-height: 180px;
-            height: auto;
-            margin: 0;
             background: transparent;
-            perspective: 800px;
+            margin: 0;
+            perspective: none; /* No 3D needed for this technique */
+            /* Remove min-height (let card grow), let content decide height */
+            /* Remove fixed height! */
         }
         .flip-card-inner {
             width: 100%;
-            min-height: 180px;
-            height: auto;
-            text-align: center;
-            transition: transform 0.5s;
-            transform-style: preserve-3d;
-            cursor: pointer;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
+            transition: none;
         }
-        .flip-card.flipped .flip-card-inner {
-            transform: rotateY(180deg);
-        }
-        .flip-card-front, .flip-card-back {
-            /* No absolute! */
+        .flip-card-front,
+        .flip-card-back {
             width: 100%;
-            min-height: 180px;
-            height: auto;
-            background: #fff;
-            border-radius: 16px;
+            /* No absolute, no position! */
+            border-radius: 24px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
-            padding: 24px;
+            font-size: 2em;
+            padding: 32px 24px;
             font-weight: normal;
             box-sizing: border-box;
             word-break: break-word;
-            backface-visibility: hidden;
+            margin: 0;
             transition: background 0.3s;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
         .flip-card-front {
             color: #143b6e;
             background: #fff;
-            z-index: 2;
         }
         .flip-card-back {
             background: #143b6e;
             color: #fff;
-            transform: rotateY(180deg);
-            z-index: 1;
+        }
+        .flip-card.show-front .flip-card-front {
+            display: flex;
+        }
+        .flip-card.show-back .flip-card-back {
+            display: flex;
         }
         .google-translate-link {
             margin-top: 18px;
@@ -118,7 +101,7 @@
             background: #143b6e;
             color: #fff;
             cursor: pointer;
-            margin-top: 36px; /* gap from card */
+            margin-top: 36px;
             margin-bottom: 36px;
             display: block;
         }
@@ -128,12 +111,10 @@
         @media (max-width: 700px) {
             .flip-card {
                 width: 94vw;
-                min-height: 120px;
             }
             .flip-card-front, .flip-card-back {
                 font-size: 1.1em;
-                padding: 12px;
-                min-height: 120px;
+                padding: 16px 8px;
             }
             #next-btn {
                 width: 90vw;
@@ -147,12 +128,10 @@
             }
             .flip-card {
                 width: 98vw;
-                min-height: 80px;
             }
             .flip-card-front, .flip-card-back {
                 font-size: 1em;
-                padding: 6px;
-                min-height: 80px;
+                padding: 8px 4px;
             }
             #next-btn {
                 width: 95vw;
@@ -168,13 +147,12 @@
         <button id="next-btn">Next</button>
     </div>
     <script>
-        // Adjust the key if your json file uses a different key for the word
+        // Key for the word column in your JSON
         const WORD_KEY = "Goethe Zertifikat B1 Wortliste";
         function getMeaning(item) {
             let values = Object.values(item);
             return values[1] || "";
         }
-
         let vocabData = [];
         let currentIdx = 0;
 
@@ -195,12 +173,10 @@
             }
             const word = item[WORD_KEY] || Object.values(item)[0];
             const meaning = getMeaning(item);
-
-            // URL encode the word for Google Translate
             const encodedWord = encodeURIComponent(word);
 
             const card = document.createElement('div');
-            card.className = 'flip-card';
+            card.className = 'flip-card show-front';
             card.innerHTML = `
                 <div class="flip-card-inner">
                     <div class="flip-card-front">${word}</div>
@@ -215,11 +191,17 @@
                     </div>
                 </div>
             `;
-            card.classList.remove('flipped');
-            // Flip on click (only if not clicking the link)
+
+            // Toggle card side on card click (but not if Translate is clicked)
             card.addEventListener('click', function(e) {
                 if (e.target && e.target.classList.contains('google-translate-link')) return;
-                card.classList.toggle('flipped');
+                if (card.classList.contains('show-front')) {
+                    card.classList.remove('show-front');
+                    card.classList.add('show-back');
+                } else {
+                    card.classList.remove('show-back');
+                    card.classList.add('show-front');
+                }
             });
 
             container.appendChild(card);
