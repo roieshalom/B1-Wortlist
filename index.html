@@ -108,22 +108,6 @@
             text-align: center;
             box-sizing: border-box;
         }
-        .google-translate-link {
-            margin-top: 18px;
-            background: #fff;
-            color: #143b6e;
-            border: 1px solid #143b6e;
-            border-radius: 8px;
-            cursor: pointer;
-            padding: 8px 18px;
-            font-size: 0.9em;
-            text-decoration: none;
-            transition: background 0.17s;
-            display: inline-block;
-        }
-        .google-translate-link:hover {
-            background: #dde7fa;
-        }
         #next-btn {
             padding: 12px 40px;
             font-size: 1.1em;
@@ -214,7 +198,6 @@
             const word = item[WORD_KEY] || Object.values(item)[0];
             const meaning = item[MEANING_KEY] || "";
             const english = item[ENGLISH_KEY] || "";
-            const encodedWord = encodeURIComponent(word);
 
             const outer = document.createElement('div');
             outer.className = 'flip-card-outer';
@@ -227,19 +210,12 @@
                     <div class="flip-card-back">
                         <div class="back-english">${english}</div>
                         <div class="back-meaning">${meaning}</div>
-                        <a 
-                          class="google-translate-link" 
-                          href="https://translate.google.com/?sl=de&tl=en&text=${encodedWord}&op=translate" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                        >Translate</a>
                     </div>
                 </div>
             `;
 
-            // Flip on click (but not if clicking Translate link)
+            // Flip on click
             card.addEventListener('click', function(e) {
-                if (e.target && e.target.classList.contains('google-translate-link')) return;
                 card.classList.toggle('flipped');
                 const front = card.querySelector('.flip-card-front');
                 const back = card.querySelector('.flip-card-back');
