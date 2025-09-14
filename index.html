@@ -14,12 +14,9 @@
             min-height: 100vh;
             font-family: Arial, sans-serif;
             background: #f5f5f5;
-            margin: 0;
-            padding: 0;
         }
         .main-layout {
             min-height: 100vh;
-            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,36 +24,25 @@
         }
         h1 {
             text-align: center;
-            margin: 32px 0 24px 0;
-            flex-shrink: 0;
-            background: #f5f5f5;
-            z-index: 2;
-            width: 100vw;
+            margin-top: 32px;
+            margin-bottom: 24px;
         }
         #game-container {
+            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            width: 100%;
-            flex-grow: 0;
-            flex-shrink: 0;
         }
         .flip-card {
-            background-color: transparent;
-            width: 300px;
+            width: 320px;
             max-width: 95vw;
             min-height: 180px;
-            height: auto;
+            margin-bottom: 32px; /* This controls the gap to the button */
+            background: transparent;
             perspective: 800px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 28px;
-            margin-top: 0;
+            /* Remove align-items, justify-content to allow card to grow naturally */
         }
         .flip-card-inner {
-            position: relative;
             width: 100%;
             min-height: 180px;
             height: auto;
@@ -64,19 +50,16 @@
             transition: transform 0.5s;
             transform-style: preserve-3d;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative;
         }
         .flip-card.flipped .flip-card-inner {
             transform: rotateY(180deg);
         }
         .flip-card-front, .flip-card-back {
-            position: absolute;
+            /* Remove position: absolute! */
             width: 100%;
             min-height: 180px;
             height: auto;
-            backface-visibility: hidden;
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
@@ -89,9 +72,12 @@
             font-weight: normal;
             box-sizing: border-box;
             word-break: break-word;
+            backface-visibility: hidden;
+            transition: background 0.3s;
         }
         .flip-card-front {
             color: #143b6e;
+            background: #fff;
         }
         .flip-card-back {
             background: #143b6e;
@@ -125,9 +111,9 @@
             margin-bottom: 36px;
             margin-top: 0;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
-            flex-shrink: 0;
+        }
+        #next-btn:hover {
+            background: #1950a0;
         }
         @media (max-width: 700px) {
             .flip-card {
