@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>B1 Vocabulary practice</title>
-    <!-- Add viewport for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,15 +20,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: calc(50vh - 52px); /* fills the screen, 52px is title+gap */
         }
         .flip-card {
             background-color: transparent;
             width: 300px;
+            max-width: 95vw;
             height: 180px;
+            max-height: 60vw;
             perspective: 800px;
-            margin-top: auto;
-            margin-bottom: auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -59,11 +56,14 @@
             border-radius: 16px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 1.5em;
             padding: 24px;
             font-weight: normal;
+            box-sizing: border-box;
+            word-break: break-word;
         }
         .flip-card-front {
             color: #143b6e;
@@ -72,6 +72,31 @@
             background: #143b6e;
             color: #fff;
             transform: rotateY(180deg);
+        }
+        .translate-btn {
+            margin-top: 18px;
+            background: #fff;
+            color: #143b6e;
+            border: 1px solid #143b6e;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 8px 18px;
+            font-size: 0.9em;
+            transition: background 0.17s;
+        }
+        .translate-btn:hover {
+            background: #dde7fa;
+        }
+        .translation-result {
+            margin-top: 15px;
+            color: #ffeb3b;
+            font-size: 1em;
+            font-style: italic;
+            background: rgba(0,0,0,0.1);
+            padding: 6px 8px;
+            border-radius: 6px;
+            max-width: 100%;
+            word-break: break-word;
         }
         #next-btn {
             padding: 12px 40px;
@@ -90,36 +115,41 @@
         #next-btn:hover {
             background: #1950a0;
         }
-        /* --------- Responsive styles! ----------- */
-        @media (max-width: 600px) {
+        /* Responsive styles for tablets and phones */
+        @media (max-width: 700px) {
             .flip-card {
-                width: 95vw;
-                max-width: 85vw;
-                height: 220px;
-                min-height: 140px;
+                width: 94vw;
+                height: 42vw;
+                min-height: 120px;
+                max-height: 60vw;
             }
             .flip-card-front, .flip-card-back {
                 font-size: 1.1em;
-                padding: 8vw 4vw;
-                word-break: break-word;
+                padding: 12px;
             }
             #next-btn {
-                width: 0vw;
-                min-width: 150px;
+                width: 90vw;
                 font-size: 1em;
                 padding: 12px 0;
             }
-            h1 {
-                font-size: 1.4em;
-                margin: 18px 0 12px 0;
-            }
         }
         @media (max-width: 400px) {
+            h1 {
+                font-size: 1em;
+            }
             .flip-card {
-                height: 150px;
+                width: 98vw;
+                height: 90vw;
+                min-height: 80px;
+                max-height: none;
+            }
+            .flip-card-front, .flip-card-back {
+                font-size: 1em;
+                padding: 6px;
             }
             #next-btn {
-                font-size: 0.98em;
+                width: 95vw;
+                font-size: 0.95em;
             }
         }
     </style>
@@ -135,14 +165,17 @@
             let values = Object.values(item);
             return values[1] || "";
         }
+
         let vocabData = [];
         let currentIdx = 0;
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
         }
+
         function renderCard(idx) {
             const container = document.getElementById('game-container');
             container.innerHTML = ""; // Clear previous card
@@ -153,22 +186,65 @@
             }
             const word = item[WORD_KEY] || Object.values(item)[0];
             const meaning = getMeaning(item);
+
             const card = document.createElement('div');
             card.className = 'flip-card';
             card.innerHTML = `
                 <div class="flip-card-inner">
                     <div class="flip-card-front">${word}</div>
-                    <div class="flip-card-back">${meaning}</div>
+                    <div class="flip-card-back">
+                        <div>${meaning}</div>
+                        <button class="translate-btn" type="button">Translate</button>
+                        <div class="translation-result" style="display:none;"></div>
+                    </div>
                 </div>
             `;
-            // Always remove 'flipped' so the card starts showing the word
             card.classList.remove('flipped');
-            // Flip on click
-            card.addEventListener('click', function() {
+            // Flip on click (only if not clicking on Translate button)
+            card.addEventListener('click', function(e) {
+                // Prevent flipping if translate button is clicked
+                if (e.target && e.target.classList.contains('translate-btn')) return;
                 card.classList.toggle('flipped');
             });
+
+            // Translate button logic
+            const btn = card.querySelector('.translate-btn');
+            const resultDiv = card.querySelector('.translation-result');
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Disable button to prevent double click
+                btn.disabled = true;
+                btn.textContent = "Translating...";
+                // Use the word itself for translation (German to English)
+                fetch('https://libretranslate.de/translate', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        q: word,
+                        source: "de",
+                        target: "en",
+                        format: "text"
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    resultDiv.textContent = data.translatedText || "No translation found.";
+                    resultDiv.style.display = "block";
+                    btn.style.display = "none";
+                })
+                .catch(err => {
+                    resultDiv.textContent = "Translation failed.";
+                    resultDiv.style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = "Translate";
+                });
+            });
+
             container.appendChild(card);
         }
+
         function showCard(idx) {
             if (vocabData.length === 0) return;
             if (idx < 0) idx = 0;
@@ -176,6 +252,7 @@
             currentIdx = idx;
             renderCard(currentIdx);
         }
+
         fetch('csvjson.json')
             .then(response => response.json())
             .then(data => {
@@ -187,6 +264,7 @@
                 document.getElementById('game-container').innerText =
                   'Fehler beim Laden der Wortliste: ' + error;
             });
+
         document.getElementById('next-btn').addEventListener('click', function() {
             if (vocabData.length > 0) {
                 currentIdx = (currentIdx + 1) % vocabData.length;
