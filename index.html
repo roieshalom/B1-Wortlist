@@ -1,19 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8"/>
     <title>B1-WortschatzÜbung</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Google Fonts Noto Sans -->
-    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
-    <!-- External CSS file -->
-    <link href="style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet"/>
+    <link href="style.css" rel="stylesheet"/>
     <style>
-        .container {
-            max-width: 400px;
-            width: 100%;
-            margin: 0 auto;
-        }
         .header {
             padding: 20px;
             text-align: center;
@@ -39,20 +32,30 @@
             justify-content: center;
             gap: 30px;
         }
+        .header-links a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .header-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>B1-WortschatzÜbung</h1>
-            <div class="header-links">
-                <!-- Navigation links will go here -->
-            </div>
-        </header>
-        <main>
-            <div class="app-title">German B1 Vocabulary Practice</div>
-            <!-- Main content will go here -->
-        </main>
+    <div class="header">
+        <h1 class="app-title">B1-WortschatzÜbung</h1>
+        <div class="header-links">
+            <a href="#statistiken">Statistiken</a>
+            <a href="#ueber">Über</a>
+        </div>
+    </div>
+    
+    <div class="main-layout">
+        <div id="game-container"></div>
+        <button id="next-btn">Next</button>
     </div>
 </body>
 </html>
