@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="UTF-8">
     <title>B1-WortschatzÜbung</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet"/>
-    <link href="style.css" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts Noto Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
+    <!-- External CSS file -->
+    <link href="style.css" rel="stylesheet">
     <style>
         .header {
             padding: 20px;
@@ -57,5 +59,103 @@
         <div id="game-container"></div>
         <button id="next-btn">Next</button>
     </div>
+    
+    <script>
+        // Use the new keys from your updated JSON file
+        const WORD_KEY = "Wortliste";
+        const MEANING_KEY = "Meaning";
+        const ENGLISH_KEY = "English";
+        let vocabData = [];
+        let currentIdx = 0;
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        function adjustOuterHeight(outer, front, back) {
+            setTimeout(() => {
+                const frontHeight = front.scrollHeight;
+                const backHeight = back.scrollHeight;
+                const maxHeight = Math.max(frontHeight, backHeight, 180);
+                outer.style.minHeight = maxHeight + "px";
+            }, 0);
+        }
+        
+        function renderCard(idx) {
+            const container = document.getElementById('game-container');
+            container.innerHTML = ""; // Clear previous card
+            
+            const item = vocabData[idx];
+            if (!item) {
+                container.innerHTML = "<p>No card found.</p>";
+                return;
+            }
+            
+            const word = item[WORD_KEY] || Object.values(item)[0];
+            const meaning = item[MEANING_KEY] || "";
+            const english = item[ENGLISH_KEY] || "";
+            
+            const outer = document.createElement('div');
+            outer.className = 'flip-card-outer';
+            
+            const card = document.createElement('div');
+            card.className = 'flip-card';
+            card.innerHTML = `
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">${word}</div>
+                    <div class="flip-card-back">
+                        <div class="back-english">${english}</div>
+                        <div class="back-meaning">${meaning}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Flip on click
+            card.addEventListener('click', function(e) {
+                card.classList.toggle('flipped');
+                const front = card.querySelector('.flip-card-front');
+                const back = card.querySelector('.flip-card-back');
+                adjustOuterHeight(outer, front, back);
+            });
+            
+            outer.appendChild(card);
+            container.appendChild(outer);
+            
+            // Adjust height after render
+            const front = card.querySelector('.flip-card-front');
+            const back = card.querySelector('.flip-card-back');
+            adjustOuterHeight(outer, front, back);
+        }
+        
+        function showCard(idx) {
+            if (vocabData.length === 0) return;
+            if (idx < 0) idx = 0;
+            if (idx >= vocabData.length) idx = 0;
+            currentIdx = idx;
+            renderCard(currentIdx);
+        }
+        
+        fetch('csvjson.json')
+            .then(response => response.json())
+            .then(data => {
+                vocabData = data;
+                shuffleArray(vocabData);
+                showCard(0);
+            })
+            .catch(error => {
+                document.getElementById('game-container').innerText =
+                  'Fehler beim Laden der Wortliste: ' + error;
+            });
+        
+        document.getElementById('next-btn').addEventListener('click', function() {
+            if (vocabData.length > 0) {
+                currentIdx = (currentIdx + 1) % vocabData.length;
+                showCard(currentIdx);
+            }
+        });
+    </script>
 </body>
 </html>
